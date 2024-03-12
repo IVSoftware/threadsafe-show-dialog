@@ -14,7 +14,11 @@ class MockScreen : Form
         }
         base.OnFormClosing(e);
     }
-    public void RaiseMockFault() => Fault?.Invoke(this, EventArgs.Empty);
+    public void RaiseMockFault(bool onDifferentThread)
+    {
+        if (onDifferentThread) Task.Run(() => Fault?.Invoke(this, EventArgs.Empty));
+        else Fault?.Invoke(this, EventArgs.Empty);
+    }
     public event EventHandler? Fault;
 }
 ```
@@ -25,7 +29,7 @@ To mock the "really simple form with a close button on it" envision a form that 
 [![modal error dialog][1]][1]
 
 ```
-class FaultDetectedScreen : Form 
+class FrmFaultDetected : Form 
 {
     RichTextBox _richTextBox = new RichTextBox
     {
@@ -33,7 +37,7 @@ class FaultDetectedScreen : Form
         Dock = DockStyle.Fill,
         BackColor = Color.FromArgb(0x22, 0x22, 0x22),
     };
-    public FaultDetectedScreen() 
+    public FrmFaultDetected() 
     {
         StartPosition = FormStartPosition.Manual;
         Padding = new Padding(5);
@@ -176,10 +180,10 @@ public partial class MainForm : Form
                 token);
             var activeScreens = Application.OpenForms.OfType<MockScreen>().ToArray();
             activeScreens[_rando.Next(activeScreens.Length)]
-                .RaiseMockFault(_rando.Next(2) == 1);
+                .RaiseMockFault(onDifferentThread: _rando.Next(2) == 1);
         }
     }
-    FaultDetectedScreen FaultDetectedScreen { get; } = new FaultDetectedScreen();
+    FrmFaultDetected FaultDetectedScreen { get; } = new FrmFaultDetected();
 }
 ```
 

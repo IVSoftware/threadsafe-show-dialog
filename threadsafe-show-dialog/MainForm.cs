@@ -82,10 +82,10 @@ namespace threadsafe_show_dialog
                     token);
                 var activeScreens = Application.OpenForms.OfType<MockScreen>().ToArray();
                 activeScreens[_rando.Next(activeScreens.Length)]
-                    .RaiseMockFault(_rando.Next(2) == 1);
+                    .RaiseMockFault(onDifferentThread: _rando.Next(2) == 1);
             }
         }
-        FaultDetectedScreen FaultDetectedScreen { get; } = new FaultDetectedScreen();
+        FrmFaultDetected FaultDetectedScreen { get; } = new FrmFaultDetected();
     }
     class MockScreen : Form
     {
@@ -105,7 +105,7 @@ namespace threadsafe_show_dialog
         }
         public event EventHandler? Fault;
     }
-    class FaultDetectedScreen : Form 
+    class FrmFaultDetected : Form 
     {
         RichTextBox _richTextBox = new RichTextBox
         {
@@ -113,7 +113,7 @@ namespace threadsafe_show_dialog
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(0x22, 0x22, 0x22),
         };
-        public FaultDetectedScreen() 
+        public FrmFaultDetected() 
         {
             StartPosition = FormStartPosition.Manual;
             Padding = new Padding(5);
